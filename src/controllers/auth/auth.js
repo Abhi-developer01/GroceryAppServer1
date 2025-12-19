@@ -77,6 +77,53 @@ export const addCustomerAddress = async (req, reply) => {
   }
 };
 
+export const selectCustomerAddress = async (req, reply) => {
+  try {
+    const { customerId } = req.user.id; // 🔐 FROM JWT;
+    const { addressId } = req.body;
+
+    if (!addressId) {
+      return reply.status(400).send({
+        message: "addressId is required",
+      });
+    }
+
+    const customer = await Customer.findById(customerId);
+
+    if (!customer) {
+      return reply.status(404).send({
+        message: "Customer not found",
+      });
+    }
+
+    const addressIndex = customer.addresses.findIndex(
+      (addr) => addr._id.toString() === addressId
+    );
+
+    if (addressIndex === -1) {
+      return reply.status(404).send({
+        message: "Address not found",
+      });
+    }
+
+    // 🔥 Move selected address to index 0
+    const [selectedAddress] = customer.addresses.splice(addressIndex, 1);
+    customer.addresses.unshift(selectedAddress);
+
+    await customer.save();
+
+    return reply.send({
+      message: "Address selected successfully",
+      addresses: customer.addresses,
+    });
+  } catch (error) {
+    return reply.status(500).send({
+      message: "Error selecting address",
+      error,
+    });
+  }
+};
+
 export const sendOtp = async (req, reply) => {
   try {
     const { phone } = req.body;

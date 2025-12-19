@@ -4,6 +4,7 @@ import {
   loginCustomer,
   loginDeliveryPartner,
   refreshToken,
+  selectCustomerAddress,
   sendOtp,
   verifyOtp,
 } from "../controllers/auth/auth.js";
@@ -17,6 +18,11 @@ export const authRoutes = async (fastify, options) => {
   fastify.get("/user", { preHandler: [verifyToken] }, fetchUser);
   fastify.patch("/user", { preHandler: [verifyToken] }, updateUser);
   fastify.post("/customer/address/add/:customerId", addCustomerAddress);
+  fastify.patch(
+    "/customer/address/select",
+    { preHandler: [verifyToken] },
+    selectCustomerAddress
+  );
 
   fastify.post("/customer/send-otp", sendOtp);
   fastify.post("/customer/verify-otp", verifyOtp);
