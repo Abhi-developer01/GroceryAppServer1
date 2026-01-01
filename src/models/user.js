@@ -61,6 +61,41 @@ const customerSchema = new mongoose.Schema({
       createdAt: { type: Date, default: Date.now },
     },
   ],
+
+  // 🟡 RETURN REQUESTS (NEW)
+  // returnRequests: [
+  //   {
+  //     orderId: {
+  //       type: mongoose.Schema.Types.ObjectId,
+  //       ref: "Order",
+  //     },
+
+  //     productId: {
+  //       type: mongoose.Schema.Types.ObjectId,
+  //       ref: "Product",
+  //     },
+
+  //     reason: String,
+
+  //     images: [
+  //       {
+  //         url: { type: String, required: true },
+  //         publicId: { type: String, required: true },
+  //       },
+  //     ],
+
+  //     status: {
+  //       type: String,
+  //       enum: ["Pending", "Approved", "Rejected"],
+  //       default: "Pending",
+  //     },
+
+  //     createdAt: {
+  //       type: Date,
+  //       default: Date.now,
+  //     },
+  //   },
+  // ],
 });
 
 //Delivery Partner Schema

@@ -36,6 +36,7 @@ export const admin = new AdminJS({
     { resource: Models.Category },
     { resource: Models.Order },
     { resource: Models.Counter },
+    { resource: Models.ReturnRequest },
   ],
   branding: {
     companyName: "Grocery Delivery App",

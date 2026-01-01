@@ -6,10 +6,17 @@ import { PORT } from "./src/config/config.js";
 import fastifySocketIO from "fastify-socket.io";
 import { registerRoutes } from "./src/routes/index.js";
 import { admin, buildAdminRouter } from "./src/config/setup.js";
+// import fastifyMultipart from "@fastify/multipart";
 
 const start = async () => {
   await connectDB(process.env.MONGO_URI);
   const app = fastify();
+
+  // await app.register(fastifyMultipart, {
+  //   limits: {
+  //     fileSize: 5 * 1024 * 1024, // 5MB
+  //   },
+  // });
 
   app.register(fastifySocketIO, {
     cors: {

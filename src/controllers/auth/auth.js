@@ -79,8 +79,11 @@ export const addCustomerAddress = async (req, reply) => {
 
 export const selectCustomerAddress = async (req, reply) => {
   try {
-    const { customerId } = req.user.id; // 🔐 FROM JWT;
+    const customerId = req.user?.userId; // 🔐 FROM JWT;
     const { addressId } = req.body;
+
+    console.log("🆔 customerId:", customerId);
+    console.log("🏠 addressId:", addressId);
 
     if (!addressId) {
       return reply.status(400).send({

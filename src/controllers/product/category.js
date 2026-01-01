@@ -2,7 +2,7 @@ import Category from "../../models/category.js";
 
 export const getAllCategories = async (req, reply) => {
   try {
-    const categories = await Category.find().limit(16);
+    const categories = await Category.find().limit(30);
     return reply.send(categories);
   } catch (error) {
     return reply.status(500).send({ message: "An error occurred", error });
