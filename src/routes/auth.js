@@ -3,6 +3,7 @@ import {
   fetchUser,
   loginCustomer,
   loginDeliveryPartner,
+  phoneEmailLogin,
   refreshToken,
   selectCustomerAddress,
   sendOtp,
@@ -13,6 +14,7 @@ import { verifyToken } from "../middleware/auth.js";
 
 export const authRoutes = async (fastify, options) => {
   fastify.post("/customer/login", loginCustomer);
+  fastify.post("/auth/phone-email", phoneEmailLogin);
   fastify.post("/delivery/login", loginDeliveryPartner);
   fastify.post("/refresh-token", refreshToken);
   fastify.get("/user", { preHandler: [verifyToken] }, fetchUser);

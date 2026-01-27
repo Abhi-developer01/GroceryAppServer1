@@ -41,6 +41,8 @@ const orderSchema = new mongoose.Schema({
     latitude: { type: Number }, //
     longitude: { type: Number }, //
     address: { type: String },
+    receiverName: { type: String },
+    receiverPhone: { type: Number },
   },
   pickupLocation: {
     latitude: { type: Number }, //
@@ -68,7 +70,7 @@ async function getNextSequenceValue(sequenceName) {
   const sequenceDocument = await Counter.findOneAndUpdate(
     { name: sequenceName },
     { $inc: { sequence_value: 1 } },
-    { new: true, upsert: true }
+    { new: true, upsert: true },
   );
   return sequenceDocument.sequence_value;
 }

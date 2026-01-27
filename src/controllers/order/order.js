@@ -18,6 +18,20 @@ export const createOrder = async (req, reply) => {
       return reply.status(404).send({ message: "Customer not found" });
     }
 
+    const primaryAddress = customerData.addresses?.[0];
+
+    console.log("PRIMARY ADDRESS →", primaryAddress);
+    console.log("DELIVERY SNAPSHOT →", {
+      latitude: primaryAddress.latitude,
+      longitude: primaryAddress.longitude,
+      receiverName: primaryAddress.name,
+      receiverPhone: primaryAddress.phone,
+    });
+
+    if (!primaryAddress) {
+      return reply.status(400).send({ message: "Customer address not found" });
+    }
+
     const newOrder = new Order({
       customer: userId,
       items: items.map((item) => ({
@@ -27,10 +41,17 @@ export const createOrder = async (req, reply) => {
       })),
       branch,
       totalPrice,
+      // deliveryLocation: {
+      //   latitude: customerData.liveLocation.latitude,
+      //   longitude: customerData.liveLocation.longitude,
+      //   address: customerData.address || "No address available",
+      // },
       deliveryLocation: {
-        latitude: customerData.liveLocation.latitude,
-        longitude: customerData.liveLocation.longitude,
-        address: customerData.address || "No address available",
+        latitude: primaryAddress.latitude,
+        longitude: primaryAddress.longitude,
+        address: `${primaryAddress.houseNo}, ${primaryAddress.location}, ${primaryAddress.city}, ${primaryAddress.state}`,
+        receiverName: primaryAddress.name, // ✅ from address
+        receiverPhone: primaryAddress.phone, // ✅ from address
       },
       pickupLocation: {
         latitude: branchData.location.latitude,
@@ -38,6 +59,8 @@ export const createOrder = async (req, reply) => {
         address: branchData.address || "No address available",
       },
     });
+
+    console.log(newOrder);
 
     let savedOrder = await newOrder.save();
 
@@ -422,14 +445,22 @@ export const paymentSuccess = async (request, reply) => {
 
     cartItems.forEach((cartItem) => {
       const dbItem = itemsFromDB.find(
-        (p) => p._id.toString() === cartItem.item
+        (p) => p._id.toString() === cartItem.item,
       );
 
       if (!dbItem) return;
 
       const price = dbItem.discountPrice || dbItem.price;
       totalAmount += price * cartItem.count;
+
+      //      const price = dbItem.price; // ✅ selling price only
+      // itemsTotal += price * cartItem.count;
     });
+
+    //     const handlingCharge = 7;
+    // const deliveryCharge = itemsTotal < 200 ? 30 : 0;
+
+    // const totalAmount = itemsTotal + handlingCharge + deliveryCharge;
 
     // ------------------------------
     // 5️⃣ CREATE TRANSACTION
@@ -479,10 +510,18 @@ export const paymentSuccess = async (request, reply) => {
       totalPrice: totalAmount,
       deliveryDate,
 
+      // deliveryLocation: {
+      //   latitude: userLiveLocation.latitude,
+      //   longitude: userLiveLocation.longitude,
+      //   address: userLiveLocation.address || "No address provided",
+      // },
+
       deliveryLocation: {
-        latitude: userLiveLocation.latitude,
-        longitude: userLiveLocation.longitude,
-        address: userLiveLocation.address || "No address provided",
+        latitude: address.latitude,
+        longitude: address.longitude,
+        address: `${address.houseNo}, ${address.location}, ${address.city}, ${address.state}`,
+        receiverName: address.name, // 🔥 THIS WAS MISSING
+        receiverPhone: address.phone, // 🔥 THIS WAS MISSING
       },
 
       pickupLocation: {
@@ -493,6 +532,12 @@ export const paymentSuccess = async (request, reply) => {
 
       deliveryPartner: null,
     });
+
+    for (const cartItem of cartItems) {
+      await Product.findByIdAndUpdate(cartItem.item, {
+        $inc: { stock: -cartItem.count },
+      });
+    }
 
     // ------------------------------
     // 8️⃣ LINK TRANSACTION → ORDER
@@ -742,7 +787,7 @@ export const getOrders = async (req, reply) => {
       query.branch = branchId;
     }
     const orders = await Order.find(query).populate(
-      "customer branch items.item deliveryPartner"
+      "customer branch items.item deliveryPartner",
     );
     return reply.send(orders);
   } catch (error) {
@@ -757,7 +802,7 @@ export const getOrderById = async (req, reply) => {
     const { orderId } = req.params;
 
     const order = await Order.findById(orderId).populate(
-      "customer branch items.item deliveryPartner"
+      "customer branch items.item deliveryPartner",
     );
     if (!order) {
       return reply.status(404).send({ message: "Order not found" });

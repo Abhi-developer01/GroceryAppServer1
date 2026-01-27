@@ -48,6 +48,10 @@ const customerSchema = new mongoose.Schema({
   // 🟢 SAVED ADDRESSES (static addresses for orders)
   addresses: [
     {
+      // 👤 RECEIVER DETAILS
+      name: { type: String, required: true }, // NEW
+      phone: { type: Number }, // NEW (optional)
+
       houseNo: String,
       location: String,
       city: String,
@@ -129,6 +133,6 @@ const adminSchema = new mongoose.Schema({
 export const Customer = mongoose.model("Customer", customerSchema);
 export const DeliveryPartner = mongoose.model(
   "DeliveryPartner",
-  deliveryPartnerSchema
+  deliveryPartnerSchema,
 );
 export const Admin = mongoose.model("Admin", adminSchema);

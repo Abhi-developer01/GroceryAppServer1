@@ -5,12 +5,12 @@ const generateTokens = (user) => {
   const accessToken = jwt.sign(
     { userId: user._id, role: user.role },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: "1d" }
+    { expiresIn: "1d" },
   );
   const refreshToken = jwt.sign(
     { userId: user._id, role: user.role },
     process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: "7d" },
   );
 
   return { accessToken, refreshToken };
@@ -58,7 +58,7 @@ export const addCustomerAddress = async (req, reply) => {
           },
         },
       },
-      { new: true }
+      { new: true },
     );
 
     if (!customer) {
@@ -100,7 +100,7 @@ export const selectCustomerAddress = async (req, reply) => {
     }
 
     const addressIndex = customer.addresses.findIndex(
-      (addr) => addr._id.toString() === addressId
+      (addr) => addr._id.toString() === addressId,
     );
 
     if (addressIndex === -1) {
@@ -179,6 +179,106 @@ export const verifyOtp = async (req, reply) => {
     });
   } catch (error) {
     return reply.status(500).send({ message: "Error verifying OTP", error });
+  }
+};
+
+// export const phoneEmailLogin = async (req, reply) => {
+//   try {
+//     const { token } = req.body;
+//     console.log("🔐 TOKEN RECEIVED:", token);
+//     console.log("AUTH HEADER:", req.headers.authorization);
+//     console.log("DECODED:", jwt.decode(token));
+
+//     if (!token) {
+//       return reply.status(400).send({ message: "Token is required" });
+//     }
+
+//     // 🔐 VERIFY phone.email JWT
+//     const decoded = jwt.verify(token, process.env.PHONE_EMAIL_API_KEY);
+
+//     console.log("✅ DECODED:", decoded);
+//     /**
+//      decoded payload example:
+//      {
+//        iss: "phmail",
+//        aud: "user",
+//        user_country_code: "+91",
+//        user_phone_number: "9876543210",
+//        user_first_name: "Abhishek",
+//        user_last_name: "Kumar",
+//        iat: 1710000000,
+//        exp: 1710003600
+//      }
+//     */
+
+//     // ✅ Replace country_code + phone_no (DOC MEANS THIS)
+//     const phone = decoded.user_country_code + decoded.user_phone_number;
+
+//     let customer = await Customer.findOne({ phone });
+
+//     if (!customer) {
+//       customer = await Customer.create({
+//         phone,
+//         role: "Customer",
+//         isActivated: true,
+//       });
+//     }
+
+//     // 🔑 Issue YOUR JWT
+//     const { accessToken, refreshToken } = generateTokens(customer);
+
+//     return reply.send({
+//       message: "Login successful",
+//       accessToken,
+//       refreshToken,
+//       customer,
+//     });
+//   } catch (err) {
+//     return reply.status(401).send({
+//       message: "Invalid or expired phone.email token",
+//     });
+//   }
+// };
+
+export const phoneEmailLogin = async (req, reply) => {
+  try {
+    const { token } = req.body;
+    if (!token) return reply.status(400).send({ message: "Token required" });
+
+    const decoded = jwt.decode(token);
+
+    if (!decoded || decoded.iss !== "phmail") {
+      return reply.status(401).send({ message: "Invalid phone.email token" });
+    }
+
+    console.log("✅ Phone.Email Payload:", decoded);
+
+    // ✅ CORRECT FIELDS
+    const phone = decoded.country_code + decoded.phone_no;
+    const name = decoded.first_name + decoded.last_name;
+
+    let customer = await Customer.findOne({ phone });
+
+    if (!customer) {
+      customer = await Customer.create({
+        name,
+        phone,
+        role: "Customer",
+        isActivated: true,
+      });
+    }
+
+    const { accessToken, refreshToken } = generateTokens(customer);
+
+    return reply.send({
+      message: "Login successful",
+      accessToken,
+      refreshToken,
+      customer,
+    });
+  } catch (err) {
+    console.log("PHONE EMAIL LOGIN ERROR:", err);
+    return reply.status(401).send({ message: "Login failed" });
   }
 };
 

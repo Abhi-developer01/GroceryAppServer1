@@ -22,6 +22,19 @@ export async function searchRoutes(fastify, options) {
           },
         },
         { $limit: 30 },
+
+        {
+          $project: {
+            name: 1,
+            image: 1,
+            price: 1,
+            discountPrice: 1,
+            quantity: 1,
+            // stock: 1, // ✅ REQUIRED FOR YOUR BUTTON LOGIC
+            stock: { $ifNull: ["$stock", 0] }, // 👈 force stock
+            score: { $meta: "searchScore" }, // optional but useful
+          },
+        },
       ]);
 
       return reply.send(results);
