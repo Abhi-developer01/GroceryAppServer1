@@ -135,6 +135,12 @@ export const sendOtp = async (req, reply) => {
       return reply.code(400).send({ message: "Phone is required" });
     }
 
+    if (phone !== "9999911111") {
+      return reply
+        .code(403)
+        .send({ message: "This number is not allowed for review login" });
+    }
+
     // Later Twilio integration -> for now return 11111
     console.log(`OTP 11111 sent to phone: ${phone}`);
 
@@ -150,6 +156,11 @@ export const verifyOtp = async (req, reply) => {
 
     if (!phone || !otp) {
       return reply.code(400).send({ message: "Phone and OTP required" });
+    }
+
+    // ⭐ Block all other numbers
+    if (phone !== "9999911111") {
+      return reply.code(403).send({ message: "Invalid review number" });
     }
 
     if (otp !== "11111") {
@@ -281,6 +292,96 @@ export const phoneEmailLogin = async (req, reply) => {
     return reply.status(401).send({ message: "Login failed" });
   }
 };
+
+// export const phoneEmailLogin = async (req, reply) => {
+//   try {
+//     const { token, phone, otp } = req.body;
+
+//     /** 🟢 GOOGLE PLAY REVIEW TEST LOGIN */
+//     if (phone === "9999911111" && otp === "11111") {
+//       let customer = await Customer.findOne({ phone });
+
+//       if (!customer) {
+//         customer = await Customer.create({
+//           name: "Google Reviewer",
+//           phone: "9999911111",
+//           role: "Customer",
+//           isActivated: true,
+//         });
+//       }
+
+//       const { accessToken, refreshToken } = generateTokens(customer);
+
+//       return reply.send({
+//         message: "Test login successful",
+//         accessToken,
+//         refreshToken,
+//         customer,
+//       });
+//     }
+
+//     /** 🔽 NORMAL PHONE.EMAIL LOGIN FLOW */
+//     if (!token) return reply.status(400).send({ message: "Token required" });
+
+//     // const decoded = jwt.decode(token);
+
+//     // if (!decoded || decoded.iss !== "phmail") {
+//     //   return reply.status(401).send({ message: "Invalid phone.email token" });
+//     // }
+
+//     const decoded = jwt.decode(token);
+
+//     if (!decoded) {
+//       return reply.status(401).send({ message: "Invalid token" });
+//     }
+
+//     console.log("PHONE.EMAIL PAYLOAD:", decoded);
+
+//     // let phone;
+//     // let name;
+
+//     // ⭐ GOOGLE REVIEW BYPASS
+//     if (decoded.phone_no === "9999911111") {
+//       phone = "9999911111";
+//       name = "Google Reviewer";
+//     } else {
+//       if (decoded.iss !== "phmail") {
+//         return reply.status(401).send({ message: "Invalid phone.email token" });
+//       }
+
+//       phone = decoded.country_code + decoded.phone_no;
+//       name = decoded.first_name + decoded.last_name;
+//     }
+
+//     console.log("✅ Phone.Email Payload:", decoded);
+
+//     const phoneNumber = decoded.country_code + decoded.phone_no;
+//     const name = decoded.first_name + decoded.last_name;
+
+//     let customer = await Customer.findOne({ phone: phoneNumber });
+
+//     if (!customer) {
+//       customer = await Customer.create({
+//         name,
+//         phone: phoneNumber,
+//         role: "Customer",
+//         isActivated: true,
+//       });
+//     }
+
+//     const { accessToken, refreshToken } = generateTokens(customer);
+
+//     return reply.send({
+//       message: "Login successful",
+//       accessToken,
+//       refreshToken,
+//       customer,
+//     });
+//   } catch (err) {
+//     console.log("PHONE EMAIL LOGIN ERROR:", err);
+//     return reply.status(401).send({ message: "Login failed" });
+//   }
+// };
 
 export const loginDeliveryPartner = async (req, reply) => {
   try {

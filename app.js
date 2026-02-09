@@ -35,7 +35,7 @@ const start = async () => {
       console.log(err);
     } else {
       console.log(
-        `Grocery App running on http://localhost:${PORT}${admin.options.rootPath}`
+        `Grocery App running on http://localhost:${PORT}${admin.options.rootPath}`,
       );
     }
   });
@@ -48,6 +48,18 @@ const start = async () => {
         socket.join(orderId);
         console.log(`🪴User Joined room ${orderId}`);
       });
+
+      // socket.on("joinRoom", ({ type, id }) => {
+      //   socket.join(id);
+
+      //   if (type === "order") {
+      //     console.log(`📦 Joined ORDER room: ${id}`);
+      //   }
+
+      //   if (type === "branch") {
+      //     console.log(`🏬 Joined BRANCH room: ${id}`);
+      //   }
+      // });
 
       socket.on("disconnect", () => {
         console.log("User Disconnected X");

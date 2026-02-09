@@ -533,6 +533,40 @@ export const paymentSuccess = async (request, reply) => {
       deliveryPartner: null,
     });
 
+    // // 🔔 REAL-TIME EVENT: Notify delivery partners
+    // const io = request.server.io; // Fastify socket reference
+
+    // io.to(branch.toString()).emit("new-order", {
+    //   orderId: order.orderId,
+    //   _id: order._id,
+    //   branch: order.branch,
+    //   totalPrice: order.totalPrice,
+    //   deliveryLocation: order.deliveryLocation,
+    //   status: order.status,
+    //   createdAt: order.createdAt,
+    // });
+
+    // 🔔 REAL-TIME EVENT: Notify delivery partners
+    const io = request.server.io;
+
+    console.log("📡 [SOCKET] Emitting new-order event", {
+      branch: branch.toString(),
+      orderId: order.orderId,
+      _id: order._id,
+    });
+
+    io.to(branch.toString()).emit("new-order", {
+      orderId: order.orderId,
+      _id: order._id,
+      branch: order.branch,
+      totalPrice: order.totalPrice,
+      deliveryLocation: order.deliveryLocation,
+      status: order.status,
+      createdAt: order.createdAt,
+    });
+
+    console.log("✅ [SOCKET] new-order emitted successfully");
+
     for (const cartItem of cartItems) {
       await Product.findByIdAndUpdate(cartItem.item, {
         $inc: { stock: -cartItem.count },
