@@ -749,6 +749,8 @@ export const updateOrderStatus = async (req, reply) => {
       deliveryPersonLocation,
     });
 
+    console.log("📡 Incoming location:", deliveryPersonLocation);
+
     // 1️⃣ Check if delivery partner exists
     const deliveryPerson = await DeliveryPartner.findById(userId);
     if (!deliveryPerson) {
