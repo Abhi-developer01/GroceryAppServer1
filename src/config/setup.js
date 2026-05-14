@@ -37,6 +37,14 @@ export const admin = new AdminJS({
     { resource: Models.Order },
     { resource: Models.Counter },
     { resource: Models.ReturnRequest },
+    // ✅ 🔥 ADD THIS
+    {
+      resource: Models.Theme,
+      options: {
+        listProperties: ["name", "isActive"],
+        filterProperties: ["name", "isActive"],
+      },
+    },
   ],
   branding: {
     companyName: "Grocery Delivery App",
@@ -66,6 +74,6 @@ export const buildAdminRouter = async (app) => {
         httpOnly: process.env.NODE_ENV === "production",
         secure: process.env.NODE_ENV === "production",
       },
-    }
+    },
   );
 };
