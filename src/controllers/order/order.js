@@ -133,7 +133,7 @@ export const createCODOrder = async (req, reply) => {
       },
     });
 
-    // Assign delivery partner
+    // Assign delivery partner if required by your flow
     order.deliveryPartner = userId;
 
     // Fallback pickup location
@@ -154,6 +154,11 @@ export const createCODOrder = async (req, reply) => {
       };
     }
 
+    for (const cartItem of cartItems) {
+      await Product.findByIdAndUpdate(cartItem.item, {
+        $inc: { stock: -cartItem.count },
+      });
+    }
     await order.save();
 
     order = await Order.findById(order._id)
@@ -162,17 +167,44 @@ export const createCODOrder = async (req, reply) => {
       .populate("branch")
       .populate("deliveryPartner");
 
-    // Socket update
-    req.server.io.to(order._id.toString()).emit("LiveTrackingUpdates", order);
+    // ==============================
+    // 🚀 NEW ORDER SOCKET EMIT
+    // ==============================
 
-    console.log("✅ COD Order Created:", order._id);
+    const io = req.server.io;
+
+    console.log("📡 [SOCKET] Emitting new-order event", {
+      branch: branch.toString(),
+      orderId: order.orderId,
+      _id: order._id,
+    });
+
+    io.to(branch.toString()).emit("new-order", {
+      orderId: order.orderId,
+      _id: order._id,
+      branch: order.branch,
+      totalPrice: order.totalPrice,
+      deliveryLocation: order.deliveryLocation,
+      status: order.status,
+      createdAt: order.createdAt,
+    });
+
+    console.log("✅ [SOCKET] new-order emitted successfully");
+
+    // ==============================
+    // 🚚 LIVE TRACKING SOCKET EMIT
+    // ==============================
+
+    io.to(order._id.toString()).emit("LiveTrackingUpdates", order);
+
+    console.log("✅ LiveTrackingUpdates emitted");
 
     return reply.status(201).send({
       success: true,
       order,
     });
   } catch (error) {
-    console.log("❌ COD ORDER ERROR:", error);
+    console.error("❌ COD ORDER ERROR:", error);
 
     return reply.status(500).send({
       success: false,
