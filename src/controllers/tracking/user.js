@@ -23,7 +23,7 @@ export const updateUser = async (req, reply) => {
     const updatedUser = await UserModel.findByIdAndUpdate(
       userId,
       { $set: updateData },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
     if (!updatedUser) {
       return reply.status(404).send({ message: "User not found" });
@@ -36,3 +36,4 @@ export const updateUser = async (req, reply) => {
     return reply.status(500).send({ message: "Failed to update user", error });
   }
 };
+// A;
