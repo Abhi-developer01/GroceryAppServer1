@@ -6,6 +6,7 @@ import {
   getOrders,
   updateOrderStatus,
   paymentSuccess,
+  createCODOrder,
 } from "../controllers/order/order.js";
 import { verifyToken } from "../middleware/auth.js";
 
@@ -22,6 +23,8 @@ export const orderRoutes = async (fastify, options) => {
   fastify.patch("/order/:orderId/status", updateOrderStatus);
   fastify.post("/order/:orderId/confirm", confirmOrder);
   fastify.get("/order/:orderId", getOrderById);
+  fastify.post("/order/cod", createCODOrder);
+
   // fastify.post("/transaction", createTransaction);
   fastify.post("/order/transaction", createTransaction);
   fastify.post("/order/payment-success", paymentSuccess);

@@ -1,5 +1,6 @@
 import {
   addCustomerAddress,
+  deleteCustomerAddress,
   fetchUser,
   loginCustomer,
   loginDeliveryPartner,
@@ -7,6 +8,7 @@ import {
   refreshToken,
   selectCustomerAddress,
   sendOtp,
+  updateCustomerAddress,
   verifyOtp,
 } from "../controllers/auth/auth.js";
 import { updateUser } from "../controllers/tracking/user.js";
@@ -23,7 +25,17 @@ export const authRoutes = async (fastify, options) => {
   fastify.patch(
     "/customer/address/select",
     { preHandler: [verifyToken] },
-    selectCustomerAddress
+    selectCustomerAddress,
+  );
+  fastify.patch(
+    "/customer/address/:addressId",
+    { preHandler: [verifyToken] },
+    updateCustomerAddress,
+  );
+  fastify.delete(
+    "/customer/address/:addressId",
+    { preHandler: [verifyToken] },
+    deleteCustomerAddress,
   );
 
   fastify.post("/customer/send-otp", sendOtp);

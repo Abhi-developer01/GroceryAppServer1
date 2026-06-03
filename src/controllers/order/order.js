@@ -73,6 +73,114 @@ export const createOrder = async (req, reply) => {
   }
 };
 
+export const createCODOrder = async (req, reply) => {
+  try {
+    const {
+      userId,
+      cartItems,
+      address,
+      deliveryDate,
+      amount,
+      branch,
+      userLiveLocation,
+    } = req.body;
+
+    console.log("📦 COD ORDER REQUEST:", req.body);
+
+    const customer = await Customer.findById(userId);
+
+    if (!customer) {
+      return reply.status(404).send({
+        success: false,
+        message: "Customer not found",
+      });
+    }
+
+    const branchData = await Branch.findById(branch);
+
+    if (!branchData) {
+      return reply.status(404).send({
+        success: false,
+        message: "Branch not found",
+      });
+    }
+
+    let order = new Order({
+      customer: userId,
+
+      items: cartItems.map((item) => ({
+        id: item.id,
+        item: item.item,
+        count: item.count,
+      })),
+
+      branch,
+      totalPrice: amount,
+      deliveryDate,
+
+      deliveryLocation: {
+        latitude: userLiveLocation?.latitude,
+        longitude: userLiveLocation?.longitude,
+        address: userLiveLocation?.address || "",
+        receiverName: address?.name,
+        receiverPhone: address?.phone,
+      },
+
+      pickupLocation: {
+        latitude: branchData?.location?.latitude,
+        longitude: branchData?.location?.longitude,
+        address: branchData?.address || "Store / Warehouse",
+      },
+    });
+
+    // Assign delivery partner
+    order.deliveryPartner = userId;
+
+    // Fallback pickup location
+    if (!order.pickupLocation || !order.pickupLocation.latitude) {
+      order.pickupLocation = {
+        latitude: 27.9001,
+        longitude: 79.9205,
+        address: "Store / Warehouse",
+      };
+    }
+
+    // Fallback delivery location
+    if (!order.deliveryLocation || !order.deliveryLocation.latitude) {
+      order.deliveryLocation = {
+        latitude: 27.897,
+        longitude: 79.923,
+        address: "Customer Delivery Location",
+      };
+    }
+
+    await order.save();
+
+    order = await Order.findById(order._id)
+      .populate("customer")
+      .populate("items.item")
+      .populate("branch")
+      .populate("deliveryPartner");
+
+    // Socket update
+    req.server.io.to(order._id.toString()).emit("LiveTrackingUpdates", order);
+
+    console.log("✅ COD Order Created:", order._id);
+
+    return reply.status(201).send({
+      success: true,
+      order,
+    });
+  } catch (error) {
+    console.log("❌ COD ORDER ERROR:", error);
+
+    return reply.status(500).send({
+      success: false,
+      message: "Failed to create COD order",
+      error: error.message,
+    });
+  }
+};
 // export const createTransaction = async (req, res) => {
 //   const { amount, userId } = req.body;
 

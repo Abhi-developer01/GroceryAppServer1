@@ -77,6 +77,116 @@ export const addCustomerAddress = async (req, reply) => {
   }
 };
 
+export const updateCustomerAddress = async (req, reply) => {
+  try {
+    console.log("🚀 updateCustomerAddress HIT");
+
+    const customerId = req.user?.userId;
+    const { addressId } = req.params;
+
+    console.log("🆔 customerId:", customerId);
+    console.log("🏠 addressId:", addressId);
+
+    console.log("📦 BODY:", req.body);
+
+    const { name, phone, houseNo, location, city, state, pincode } = req.body;
+
+    const customer = await Customer.findById(customerId);
+
+    console.log("👤 customer found:", !!customer);
+
+    if (!customer) {
+      return reply.status(404).send({
+        message: "Customer not found",
+      });
+    }
+
+    const address = customer.addresses.id(addressId);
+
+    console.log("📍 address found:", !!address);
+
+    if (!address) {
+      return reply.status(404).send({
+        message: "Address not found",
+      });
+    }
+
+    // ✅ Update fields
+    address.name = name;
+    address.phone = phone;
+    address.houseNo = houseNo;
+    address.location = location;
+    address.city = city;
+    address.state = state;
+    address.pincode = pincode;
+
+    await customer.save();
+
+    console.log("✅ Address updated successfully");
+
+    return reply.send({
+      message: "Address updated successfully",
+      customer,
+    });
+  } catch (error) {
+    console.log("❌ BACKEND ERROR:", error);
+
+    return reply.status(500).send({
+      message: "Error updating address",
+      error,
+    });
+  }
+};
+
+export const deleteCustomerAddress = async (req, reply) => {
+  try {
+    console.log("🚀 deleteCustomerAddress HIT");
+
+    const customerId = req.user?.userId;
+    const { addressId } = req.params;
+
+    console.log("🆔 customerId:", customerId);
+    console.log("🏠 addressId:", addressId);
+
+    const customer = await Customer.findById(customerId);
+
+    console.log("👤 customer found:", !!customer);
+
+    if (!customer) {
+      return reply.status(404).send({
+        message: "Customer not found",
+      });
+    }
+
+    const beforeCount = customer.addresses.length;
+
+    customer.addresses = customer.addresses.filter(
+      (addr) => addr._id.toString() !== addressId,
+    );
+
+    const afterCount = customer.addresses.length;
+
+    console.log("📦 Addresses before:", beforeCount);
+    console.log("📦 Addresses after:", afterCount);
+
+    await customer.save();
+
+    console.log("✅ Address deleted successfully");
+
+    return reply.send({
+      message: "Address deleted successfully",
+      customer,
+    });
+  } catch (error) {
+    console.log("❌ DELETE ADDRESS ERROR:", error);
+
+    return reply.status(500).send({
+      message: "Error deleting address",
+      error,
+    });
+  }
+};
+
 export const selectCustomerAddress = async (req, reply) => {
   try {
     const customerId = req.user?.userId; // 🔐 FROM JWT;
