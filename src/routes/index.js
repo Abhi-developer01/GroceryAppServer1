@@ -2,6 +2,7 @@ import { searchRoutes } from "../controllers/product/searchController.js";
 import { authRoutes } from "./auth.js";
 import { orderRoutes } from "./order.js";
 import { categoryRoutes, productRoutes } from "./products.js";
+import { restaurantRoutes } from "./restaurant.js";
 import { returnRoutes } from "./return.js";
 import { themeRoutes } from "./theme.js";
 
@@ -16,4 +17,5 @@ export const registerRoutes = async (fastify) => {
   fastify.register(searchRoutes, { prefix: prefix });
   fastify.register(returnRoutes, { prefix: prefix });
   fastify.register(themeRoutes, { prefix: prefix }); // ✅ ADD THIS
+  fastify.register(restaurantRoutes, { prefix: prefix });
 };

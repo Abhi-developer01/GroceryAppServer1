@@ -6,6 +6,7 @@ import Order from "./order.js";
 import Counter from "./counter.js";
 import ReturnRequest from "./return.js";
 import Theme from "./theme.js";
+import Restaurant from "./restaurant.js";
 
 export {
   Order,
@@ -18,4 +19,5 @@ export {
   Category,
   ReturnRequest,
   Theme,
+  Restaurant,
 };

@@ -376,7 +376,14 @@ export const phoneEmailLogin = async (req, reply) => {
 
     // ✅ CORRECT FIELDS
     const phone = decoded.country_code + decoded.phone_no;
-    const name = decoded.first_name + decoded.last_name;
+    // const name = decoded.user_first_name + decoded.user_last_name;
+    const name =
+      `${decoded.user_first_name || ""}${decoded.user_last_name || ""}`.trim();
+
+    console.log("FIRST:", decoded.user_first_name);
+    console.log("LAST:", decoded.user_last_name);
+    console.log("NAME:", name);
+    console.log("TYPE:", typeof name);
 
     let customer = await Customer.findOne({ phone });
 
@@ -387,10 +394,13 @@ export const phoneEmailLogin = async (req, reply) => {
         role: "Customer",
         isActivated: true,
       });
+      console.log("CREATED CUSTOMER:", customer);
     }
 
     const { accessToken, refreshToken } = generateTokens(customer);
 
+    console.log("CUSTOMER BEFORE RESPONSE:", customer);
+    console.log("FINAL CUSTOMER:", customer);
     return reply.send({
       message: "Login successful",
       accessToken,

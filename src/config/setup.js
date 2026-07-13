@@ -34,6 +34,7 @@ export const admin = new AdminJS({
     { resource: Models.Branch },
     { resource: Models.Product },
     { resource: Models.Category },
+    { resource: Models.Restaurant }, // ✅ ADD THIS
     { resource: Models.Order },
     { resource: Models.Counter },
     { resource: Models.ReturnRequest },

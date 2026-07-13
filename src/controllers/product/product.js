@@ -26,6 +26,21 @@ export const getProductsBySubcategoryId = async (req, reply) => {
   }
 };
 
+export const getProductsByRestaurantId = async (req, reply) => {
+  try {
+    const { restaurantId } = req.params;
+
+    // Find all products where the restaurant field matches the requested ID
+    const products = await Product.find({ restaurant: restaurantId });
+
+    return reply.send(products);
+  } catch (error) {
+    return reply
+      .status(500)
+      .send({ message: "An error occurred fetching products", error });
+  }
+};
+
 // import Product from "../models/Product.js";
 
 // export default async function searchRoutes(fastify, options) {
