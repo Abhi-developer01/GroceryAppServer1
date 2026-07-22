@@ -1,5 +1,20 @@
 import mongoose from "mongoose";
 
+// 1. Define the Variant Sub-schema
+const variantSchema = new mongoose.Schema({
+  image: { type: String, required: true },
+  unit: { type: String, required: true }, // e.g., "500g", "1 kg", "250ml", "1 pc"
+  price: { type: Number, required: true },
+  discountPrice: { type: Number, default: 0 },
+  stock: {
+    type: Number,
+    required: true,
+    default: 0,
+    min: 0,
+  },
+  isDefault: { type: Boolean, default: false }, // Useful to show the default selected variant on UI
+});
+
 const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -15,6 +30,12 @@ const productSchema = new mongoose.Schema(
       default: 0, // prevents undefined issues
       min: 0, // no negative stock
     },
+
+    // 🆕 HAS VARIANTS FLAG
+    hasVariants: { type: Boolean, default: false },
+
+    // 🆕 VARIANTS ARRAY
+    variants: [variantSchema],
 
     category: {
       type: mongoose.Schema.Types.ObjectId,

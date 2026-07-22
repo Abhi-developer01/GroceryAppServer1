@@ -210,6 +210,26 @@ export async function searchRoutes(fastify, options) {
           },
         },
         { $limit: 30 },
+
+        // 🏪 1. LOOKUP THE RESTAURANT RELATIONSHIP
+        {
+          $lookup: {
+            from: "restaurants", // ⚠️ MUST match your exact MongoDB collection name for restaurants (usually lowercase plural)
+            localField: "restaurant", // The field name inside your Product schema
+            foreignField: "_id", // The target field in the restaurant collection
+            as: "restaurantDetails", // Temporary array payload name
+          },
+        },
+
+        // 🧼 2. FLATTEN THE RESTAURANT ARRAY INTO A SINGLE OBJECT
+        {
+          $unwind: {
+            path: "$restaurantDetails",
+            preserveNullAndEmptyArrays: true, // Prevents removing the product if it doesn't have a restaurant
+          },
+        },
+
+        // 🎯 3. PROJECT FIELDS (Including Restaurant details)
         {
           $project: {
             name: 1,
@@ -219,6 +239,8 @@ export async function searchRoutes(fastify, options) {
             quantity: 1,
             stock: { $ifNull: ["$stock", 0] },
             score: { $meta: "searchScore" },
+
+            restaurant: { $ifNull: ["$restaurantDetails.name", null] },
           },
         },
       ]);
